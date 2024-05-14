@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Todolist {
+  id          Int       @id @default(autoincrement())
+  title       String    @unique
+  description String
+  // Define a field to establish a relation with User model
+  owner       User      @relation(fields: [ownerId], references: [id])
+  ownerId     Int       // Foreign key to store the id of the owner
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  firstName String
+  lastName  String
+  password  String
+  // Define a field to represent the Todolists owned by the user
+  todolists Todolist[] // A user can have multiple todolists
+}
