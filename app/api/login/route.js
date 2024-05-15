@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken"; // Import JWT library
 
 // Initialize Prisma Client outside of the request handler
 const prisma = new PrismaClient();
@@ -42,9 +43,14 @@ export async function POST(req, res) {
       );
     }
 
-    // Return success response with the logged-in user and their todo lists
+    // Sign JWT token with user's ID
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "1h", // Token expiration time
+    });
+
+    // Return success response with the logged-in user, todo lists, and JWT token
     return NextResponse.json(
-      { message: "Login successful", user },
+      { message: "Login successful", user, token },
       { status: 200 }
     );
   } catch (error) {
