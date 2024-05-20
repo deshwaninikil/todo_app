@@ -1,14 +1,15 @@
 import Layout from "@/component/Layout/Layout";
+import ProtectedRoute from "../ProtectedRoute";
+import TodoList from "@/component/TodoList/TodoList";
 
 const todolist = () => {
   return (
     <>
+      <ProtectedRoute />
       <Layout>
-        <p>
-          Your Todos will show up here. Please add a todo by going to the
-          homepage
-        </p>
+        <TodoList />
       </Layout>
+      <ProtectedRoute />
     </>
   );
 };

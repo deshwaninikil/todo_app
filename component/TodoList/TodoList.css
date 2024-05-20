@@ -1,0 +1,70 @@
+.todo-list-container {
+  margin-top: 20px;
+}
+
+.todo-list-heading {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.todo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.todo-card {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+.todo-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.todo-description {
+  margin-bottom: 10px;
+}
+
+.todo-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+  color: red;
+}
+
+.edit-form {
+  margin-bottom: 10px;
+}
+
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.edit-form button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.edit-form button:hover {
+  background-color: #0056b3;
+}
