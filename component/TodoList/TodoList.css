@@ -1,10 +1,6 @@
 .todo-list-container {
   margin-top: 20px;
-}
-
-.todo-list-heading {
-  font-size: 24px;
-  margin-bottom: 10px;
+  padding: 25px;
 }
 
 .todo-list {
@@ -17,6 +13,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 15px;
+  height: fit-content;
 }
 
 .todo-title {
@@ -67,4 +64,19 @@
 
 .edit-form button:hover {
   background-color: #0056b3;
+}
+
+input.search-input-todo {
+  max-width: 310px;
+  margin-bottom: 20px;
+  border: 1px solid var(--black-color);
+}
+
+@media screen and (max-width: 1000px) {
+  input.search-input-todo {
+    max-width: 215px;
+  }
+  .todo-list-container .heading {
+    margin-bottom: 10px;
+  }
 }

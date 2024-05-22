@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "@/app/context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import Loading from "@/app/(pages)/Loading/Loading";
 import "./TodoList.css";
 
 const TodoList = () => {
@@ -12,10 +13,14 @@ const TodoList = () => {
   const [editingTodo, setEditingTodo] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [expandedDescriptions, setExpandedDescriptions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const userId = user ? user.id : null;
 
   useEffect(() => {
     const fetchTodoLists = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("user_token");
         const response = await axios.post(
@@ -27,6 +32,7 @@ const TodoList = () => {
       } catch (error) {
         console.error("Failed to fetch todo lists:", error);
       }
+      setLoading(false);
     };
 
     if (userId) {
@@ -35,6 +41,7 @@ const TodoList = () => {
   }, [userId]);
 
   const handleDeleteTodo = async (todoId) => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("user_token");
       await axios.delete(`/api/delete_todo`, {
@@ -45,9 +52,11 @@ const TodoList = () => {
     } catch (error) {
       console.error("Failed to delete todo:", error);
     }
+    setLoading(false);
   };
 
   const handleEditTodo = async (todoId) => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("user_token");
       await axios.put(
@@ -62,60 +71,120 @@ const TodoList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      setTodoLists((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo.id === todoId
+            ? { ...todo, title: editedTitle, description: editedDescription }
+            : todo
+        )
+      );
       setEditingTodo(null);
       setEditedTitle("");
       setEditedDescription("");
-      // You may want to refresh the todo list after editing
     } catch (error) {
       console.error("Failed to edit todo:", error);
     }
+    setLoading(false);
   };
 
+  const toggleDescription = (todoId) => {
+    setExpandedDescriptions((prev) =>
+      prev.includes(todoId)
+        ? prev.filter((id) => id !== todoId)
+        : [...prev, todoId]
+    );
+  };
+
+  const truncateDescription = (description, wordLimit) => {
+    const words = description.split(" ");
+    if (words.length > wordLimit) {
+      return words.slice(0, wordLimit).join(" ") + "...";
+    }
+    return description;
+  };
+
+  const filteredTodos = todoLists.filter(
+    (todo) =>
+      todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      todo.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="todo-list-container">
-      <h2 className="todo-list-heading">Todo List</h2>
-      <div className="todo-list">
-        {todoLists.map((todo) => (
-          <div key={todo.id} className="todo-card">
-            {editingTodo === todo.id ? (
-              <div className="edit-form">
-                <input
-                  type="text"
-                  placeholder="Title"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                />
-                <textarea
-                  placeholder="Description"
-                  value={editedDescription}
-                  onChange={(e) => setEditedDescription(e.target.value)}
-                ></textarea>
-                <button onClick={() => handleEditTodo(todo.id)}>Save</button>
-              </div>
-            ) : (
-              <>
-                <h3 className="todo-title">{todo.title}</h3>
-                <p className="todo-description">{todo.description}</p>
-                <div className="todo-actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => setEditingTodo(todo.id)}
-                  >
-                    <FontAwesomeIcon icon={faEdit} />
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteTodo(todo.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
+    <section className="todo-list-container">
+      <h2 className="heading">Todo List</h2>
+      {todoLists.length > 0 && (
+        <input
+          type="text"
+          placeholder="Search by title or description"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input-todo"
+        />
+      )}
+      {loading && <Loading />}
+      {!loading && todoLists.length === 0 && (
+        <p className="no-todos-message">
+          No todos available. Kindly add a todo from the home page.
+        </p>
+      )}
+      {!loading && todoLists.length > 0 && filteredTodos.length === 0 && (
+        <p className="no-todos-message">No todos match your search query.</p>
+      )}
+      {!loading && (
+        <div className="todo-list">
+          {filteredTodos.map((todo) => (
+            <div key={todo.id} className="todo-card">
+              {editingTodo === todo.id ? (
+                <div className="edit-form">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                  />
+                  <textarea
+                    placeholder="Description"
+                    value={editedDescription}
+                    onChange={(e) => setEditedDescription(e.target.value)}
+                  ></textarea>
+                  <button onClick={() => handleEditTodo(todo.id)}>Save</button>
                 </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+              ) : (
+                <>
+                  <h3 className="todo-title">{todo.title}</h3>
+                  <p
+                    className="todo-description"
+                    onClick={() => toggleDescription(todo.id)}
+                  >
+                    {expandedDescriptions.includes(todo.id)
+                      ? todo.description
+                      : truncateDescription(todo.description, 40)}
+                  </p>
+                  <div className="todo-actions">
+                    <button
+                      className="edit-btn"
+                      onClick={() => {
+                        setEditingTodo(todo.id);
+                        setEditedTitle(todo.title);
+                        setEditedDescription(todo.description);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteTodo(todo.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 };
 

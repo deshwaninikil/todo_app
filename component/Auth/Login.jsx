@@ -6,14 +6,18 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import "./Auth.css";
 import { useAuth } from "@/app/context/AuthContext";
+import { useShowPassword } from "../Hooks/useShowPassword";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [inputErrors, setInputErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const { setUser, user } = useAuth();
   const router = useRouter();
+
+  const { showPass, togglePassword } = useShowPassword();
 
   // Redirect logged-in users away from the login page
   useEffect(() => {
@@ -32,23 +36,22 @@ export const Login = () => {
     const errors = {};
 
     if (!email) {
-      errors.email = "Please fill this field";
+      errors.email = "Please fill email";
     } else if (!validateEmail(email)) {
       errors.email = "Please enter a valid email address";
     }
 
     if (!password) {
-      errors.password = "Please fill this field";
+      errors.password = "Please fill password";
     }
 
     setInputErrors(errors);
 
     if (Object.keys(errors).length === 0) {
+      setLoading(true); // Start loading
+
       try {
-        const response = await axios.post("/api/login", {
-          email,
-          password,
-        });
+        const response = await axios.post("/api/login", { email, password });
         const { token, user } = response.data;
         const userData = JSON.stringify(user);
         // Store the token in localStorage
@@ -62,13 +65,15 @@ export const Login = () => {
       } catch (error) {
         setError("Login failed. Please check your credentials and try again.");
         toast.error("Login failed");
+      } finally {
+        setLoading(false); // Stop loading
       }
     }
   };
 
   return (
     <section className="dp_row justifycenter auth_section">
-      <div className="auth_container">
+      <div className="auth_container" style={{ opacity: loading ? 0.5 : 1 }}>
         <div className="auth_title">
           <h2 className="heading text-align">Login</h2>
         </div>
@@ -82,6 +87,7 @@ export const Login = () => {
                   className="input_txt"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
                 {inputErrors.email && (
                   <div className="error">{inputErrors.email}</div>
@@ -92,28 +98,34 @@ export const Login = () => {
               <div className="input_group password-div">
                 <label className="input_label">Password</label>
                 <input
-                  type="password"
+                  type={showPass ? "text" : "password"}
                   className="input_txt"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
                 {inputErrors.password && (
                   <div className="error">{inputErrors.password}</div>
                 )}
-                <span className="password-icon">
-                  <i className="fa-solid fa-eye-slash"></i>
+                <span className="password-icon" onClick={togglePassword}>
+                  <i
+                    className={`fa-solid ${
+                      showPass ? "fa-eye" : "fa-eye-slash"
+                    }`}
+                  ></i>
                 </span>
               </div>
             </div>
             <div className="auth_items action_btn">
-              <button type="submit" className="btn">
-                Login
-              </button>
-              <button type="button" className="btn">
-                Login as Guest User
+              <button type="submit" className="btn" disabled={loading}>
+                {loading ? "Loading..." : "Login"}
               </button>
             </div>
-            {error && <div className="error">{error}</div>}
+            {error && (
+              <div className="error" style={{ color: "red" }}>
+                {error}
+              </div>
+            )}
             <div className="auth_items signup_item">
               Need an account?
               <Link href="/signup" passHref>
@@ -126,3 +138,5 @@ export const Login = () => {
     </section>
   );
 };
+
+export default Login;
