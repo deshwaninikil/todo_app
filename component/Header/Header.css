@@ -1,23 +1,16 @@
 .header {
-  /* display: flex; */
-  /* justify-content: space-between; */
-  /* align-items: center; */
   padding: 20px;
   background-color: var(--light-black-color);
   color: var(--white-color);
 }
 .header-left {
   display: flex;
-  /* align-items: center; */
 }
 .header-left i {
   margin-right: 10px;
   font-size: 24px;
 }
 .header-right {
-  /* display: flex;
-  justify-content: space-between; */
-  /* align-items: center; */
   gap: 30px;
 }
 .header-right .header-link,
@@ -25,9 +18,20 @@
   margin-left: 10px;
   color: white;
   cursor: pointer;
+  position: relative;
 }
 .header-right .header-link:hover {
   text-decoration: underline;
+}
+.header-right .header-link.active::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  position: absolute;
+  bottom: -5px;
+  left: 0;
 }
 .header-button {
   padding: 8px 16px;
